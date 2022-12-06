@@ -2,10 +2,11 @@ from pyspark.sql import types as T
 from pyspark.sql import functions as F
 from pyspark.sql.dataframe import DataFrame as DF
 from pyspark.sql import window as W
+from typing import Sequence
 
 def assign_session_id(df: DF, threshold: int, user_col: str, time_col: str):
     """
-    Assigns a session id to each row in a dataframe.
+    Assigns a session id to each row in a time series dataframe.
     A session is defined as a period of time where the user is active.
     The user is considered active if the time between two consecutive events
     is less than the threshold.
@@ -14,7 +15,7 @@ def assign_session_id(df: DF, threshold: int, user_col: str, time_col: str):
     Parameters
     ----------
     df : pyspark.sql.dataframe.DataFrame
-        The dataframe to assign session ids to.
+        Time series dataframe to assign session ids to.
         threshold : int
         The threshold in seconds.
         user_col : str
@@ -43,18 +44,16 @@ def assign_session_id(df: DF, threshold: int, user_col: str, time_col: str):
         )
     )
 
-def get_top_sessions(df: DF, user_col: str, session_col: str, time_col: str, n: int):
+def get_top_n_sessions(df: DF, session_key: Sequence[str], time_col: str, n: int):
     """
-    Returns the top n sessions by duration.
+    Returns the top n sessions by duration in a time series dataframe.
     
     Parameters
     ----------
     df : pyspark.sql.dataframe.DataFrame
-        The dataframe to get the top sessions from.
-        user_col : str
-        The name of the user column.
-        session_col : str
-        The name of the session column.
+        Time series dataframe with identified sessions.
+        session_key : Sequence[str]
+        The columns that define a session.
         time_col : str
         The name of the time column.
         n : int
@@ -67,7 +66,7 @@ def get_top_sessions(df: DF, user_col: str, session_col: str, time_col: str, n: 
     """
     return (
         df
-        .groupBy(user_col, session_col)
+        .groupBy(session_key)
         .agg(
             (F.max(time_col) - F.min(time_col)).cast('long').alias('session_duration'),
         )

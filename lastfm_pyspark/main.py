@@ -4,7 +4,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import window as W
 from pyspark.context import SparkConf
 
-from etls import assign_session_id, get_top_sessions
+from etls import assign_session_id, get_top_n_sessions
 
 conf = (
     SparkConf()
@@ -40,8 +40,8 @@ plays_df = assign_session_id(
     raw_df, threshold=1200, user_col="user_id", time_col="timestamp"
 )
 
-sessions_df = get_top_sessions(
-    plays_df, user_col="user_id", session_col="session_id", 
+sessions_df = get_top_n_sessions(
+    plays_df, session_key=["user_id", "session_id"], 
     time_col="timestamp", top=50
 )
 

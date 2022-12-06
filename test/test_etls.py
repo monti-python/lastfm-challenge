@@ -5,7 +5,7 @@ from pyspark.sql import window as W
 from datetime import datetime
 import pytest
 
-from lastfm_pyspark.etls import assign_session_id, get_top_sessions
+from lastfm_pyspark.etls import assign_session_id, get_top_n_sessions
 
 
 def test_assign_session_id(spark):
@@ -13,7 +13,7 @@ def test_assign_session_id(spark):
         T.StructField("user_id", T.StringType(), True),
         T.StructField("timestamp", T.TimestampType(), True),
     ])
-    df = spark.createDataFrame([
+    timeseries_df = spark.createDataFrame([
         ("user1", datetime.fromisoformat("2020-01-01 00:00:00")),
         ("user1", datetime.fromisoformat("2020-01-01 00:15:00")),
         ("user1", datetime.fromisoformat("2020-01-01 00:30:00")),
@@ -23,7 +23,7 @@ def test_assign_session_id(spark):
         ("user2", datetime.fromisoformat("2020-01-01 00:45:00")),
     ], schema=schema)
     res = assign_session_id(
-        df,
+        timeseries_df,
         threshold=1200,
         user_col="user_id",
         time_col="timestamp"
@@ -39,7 +39,7 @@ def test_assign_session_id(spark):
     ], schema=schema.add("session_id", T.IntegerType()))
     assert res.collect() == exp.collect()
 
-def test_get_top_sessions(spark):
+def test_get_top_n_sessions(spark):
     schema_in = T.StructType([
         T.StructField("user_id", T.StringType(), True),
         T.StructField("session_id", T.IntegerType(), True),
@@ -61,10 +61,9 @@ def test_get_top_sessions(spark):
         ("user2", 1, datetime.fromisoformat("2020-01-01 00:45:00")),
     ], schema=schema_in)
 
-    res = get_top_sessions(
+    res = get_top_n_sessions(
         df,
-        user_col="user_id",
-        session_col="session_id",
+        session_key=["user_id", "session_id"],
         time_col="timestamp",
         n=2
     )
