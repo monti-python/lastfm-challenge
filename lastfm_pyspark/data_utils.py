@@ -2,7 +2,7 @@ from pyspark.sql import types as T
 from pyspark.sql import functions as F
 from pyspark.sql.dataframe import DataFrame as DF
 from pyspark.sql import window as W
-from typing import Sequence
+from typing import List
 
 def assign_session_id(df: DF, threshold: int, user_col: str, time_col: str):
     """
@@ -44,7 +44,7 @@ def assign_session_id(df: DF, threshold: int, user_col: str, time_col: str):
         )
     )
 
-def get_top_n_sessions(df: DF, session_key: Sequence[str], time_col: str, n: int):
+def get_top_n_sessions(df: DF, session_key: List[str], time_col: str, n: int):
     """
     Returns the top n sessions by duration in a time series dataframe.
     
