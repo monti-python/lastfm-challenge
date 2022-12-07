@@ -3,8 +3,9 @@ from pyspark.sql import types as T
 from pyspark.sql import functions as F
 from pyspark.context import SparkConf
 import logging
+import argparse
 
-from data_utils import assign_session_id, get_top_n_sessions
+from datautils import assign_session_id, get_top_n_sessions
 
 
 def get_spark_session() -> SparkSession:
@@ -15,7 +16,7 @@ def get_spark_session() -> SparkSession:
         .set("spark.executor.memory", "4g")
         .set("spark.driver.memory", "4g")
         .set("spark.driver.maxResultSize", "2g")
-        .set("spark.sql.execution.arrow.enabled", "true")
+        .set("spark.sql.execution.arrow.pyspark.enabled", "true")
     )
     spark = SparkSession.builder.config(conf=conf).getOrCreate()
     return spark
@@ -40,19 +41,19 @@ def load_lastfm_dataset(spark):
     )
 
 
-def main():
+def main(output_dir: str):
     logging.info("Creating Spark session...")
     spark = get_spark_session()
     logging.info("Loading LastFM dataset...")
     raw_df = load_lastfm_dataset(spark)
 
-    logging.info("Computing top 10 songs in the top 50 sessions...")
+    logging.info("Exporting top 10 songs in the top 50 sessions to csv...")
     plays_df = assign_session_id(
         raw_df, threshold=1200, user_col="user_id", time_col="timestamp"
     )
     sessions_df = get_top_n_sessions(
         plays_df, session_key=["user_id", "session_id"], 
-        time_col="timestamp", top=50
+        time_col="timestamp", n=50
     )
     top10_df = (
         sessions_df
@@ -62,9 +63,13 @@ def main():
         .orderBy(F.col("plays").desc())
         .limit(10)
     )
-    logging.info("Exporting results to tsv file 'top10.tsv'")
-    top10_df.write.csv("/out/top10.tsv", header=True, sep="\t")
+    top10_df.toPandas().to_csv(f"{output_dir}/top10.csv", index=False, sep="\t")
+    logging.info(f"Exported results to file '{output_dir}/top10.tsv'")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output_dir", "-o", type=str, default="/out")
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO)
+    main(args.output_dir)
