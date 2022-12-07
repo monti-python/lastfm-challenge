@@ -1,11 +1,7 @@
 from pyspark.sql import types as T
-from pyspark.sql import functions as F
-from pyspark.sql.dataframe import DataFrame as DF
-from pyspark.sql import window as W
 from datetime import datetime
-import pytest
 
-from lastfm_pyspark.data_utils import assign_session_id, get_top_n_sessions
+from lastfm_pyspark.datautils import assign_session_id, get_top_n_sessions
 
 
 def test_assign_session_id(spark):
