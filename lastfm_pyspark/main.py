@@ -47,7 +47,7 @@ def main(output_dir: str):
     logging.info("Loading LastFM dataset...")
     raw_df = load_lastfm_dataset(spark)
 
-    logging.info("Exporting top 10 songs in the top 50 sessions to csv...")
+    logging.info("Exporting top 10 songs in the top 50 sessions to tsv...")
     plays_df = assign_session_id(
         raw_df, threshold=1200, user_col="user_id", time_col="timestamp"
     )
@@ -63,7 +63,7 @@ def main(output_dir: str):
         .orderBy(F.col("plays").desc())
         .limit(10)
     )
-    top10_df.toPandas().to_csv(f"{output_dir}/top10.csv", index=False, sep="\t")
+    top10_df.toPandas().to_csv(f"{output_dir}/top10.tsv", index=False, sep="\t")
     logging.info(f"Exported results to file '{output_dir}/top10.tsv'")
 
 
