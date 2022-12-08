@@ -1,4 +1,3 @@
-from pyspark.sql import types as T
 from pyspark.sql import functions as F
 from pyspark.sql.dataframe import DataFrame as DF
 from pyspark.sql import window as W
@@ -34,7 +33,7 @@ def assign_session_id(df: DF, threshold: int, user_col: str, time_col: str):
         df
         .select(
             '*',
-            (F.col(time_col) - F.lag(time_col).over(w)).cast("long")
+            (F.col(time_col).cast("long") - F.lag(time_col).over(w).cast("long"))
             .alias('inactive_time'),
         )
         .select(
