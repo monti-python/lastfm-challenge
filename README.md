@@ -30,7 +30,7 @@ docker run --rm -v $(pwd)/out:/out lastfm_pyspark
 
   - The application runs in a container engine (e.g. Docker, Kubernetes)
 
-  - Session time is calculated based on play actions (i.e. regardless or the last track's duration). More accurate session times could be calculated if the timestamp when tracks end was provided in the dataset. In this case session duration should be calculated from the start of the first track to the end of the last track.
+  - Session time is calculated based on play actions (i.e. regardless or the last track's duration). More accurate session times could be calculated if the play duration was provided in the dataset. In this case session duration should be calculated from the start of the first track to the end of the last track.
 
 
 
