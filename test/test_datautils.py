@@ -35,6 +35,7 @@ def test_assign_session_id(spark):
     ], schema=schema.add("session_id", T.IntegerType()))
     assert res.collect() == exp.collect()
 
+    
 def test_get_top_n_sessions(spark):
     schema_in = T.StructType([
         T.StructField("user_id", T.StringType(), True),
